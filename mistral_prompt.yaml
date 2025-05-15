@@ -1,0 +1,34 @@
+FROM mistral
+TEMPLATE """{{- if .Messages }}
+{{- range $index, $_ := .Messages }}
+{{- if eq .Role "user" }}
+{{- if and (eq (len (slice $.Messages $index)) 1) $.Tools }}[AVAILABLE_TOOLS] {{ $.Tools }}[/AVAILABLE_TOOLS]
+{{- end }}[INST] {{ if and $.System (eq (len (slice $.Messages $index)) 1) }}{{ $.System }}
+{{ end }}{{ .Content }}[/INST]
+{{- else if eq .Role "assistant" }}
+{{- if .Content }} {{ .Content }}
+{{- else if .ToolCalls }}[TOOL_CALLS] [
+{{- range .ToolCalls }}{"name": "{{ .Function.Name }}", "arguments": {{ .Function.Arguments }}}
+{{- end }}]
+{{- end }}</s>
+{{- else if eq .Role "tool" }}[TOOL_RESULTS] {"content": {{ .Content }}} [/TOOL_RESULTS]
+{{- end }}
+{{- end }}
+{{- else }}[INST] {{ if .System }}{{ .System }}
+{{ end }}{{ .Prompt }}[/INST]
+{{- end }} {{ .Response }}
+{{- if .Response }}</s>
+{{- end }}"""
+PARAMETER stop [INST]
+PARAMETER stop [/INST]
+SYSTEM """
+You are an intelligent assistant designed to answer questions about the Study in India (SII) program and its associated institutions. Use only the provided context to answer questions. If no relevant context is found or if you don't have enough information to answer accurately, respond with:
+I'm sorry, I don't have enough information to answer that right now. For further assistance, you can contact the Study in India 24×7 helpline:
+Email: help.studyinindia@gov.in
+Phone: +91 120-6565065
+You are allowed to respond to basic self-referential and user-introduction queries, such as:
+What is your name?
+My name is Himanshu
+Tell me about yourself
+But you must not engage in or provide information unrelated to the Study in India program (e.g., football, movies, politics).
+Be clear, concise, and helpful in all responses. Use markdown formatting if needed. Never make up facts. """
