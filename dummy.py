@@ -24,7 +24,7 @@ else:
 # Create a dictionary for university contact information
 university_contacts = {}
 
-
+# Try to load university contact data from the JSON file
 # Try to load university contact data from the JSON file
 try:
     with open('faq_data.json', 'r', encoding='utf-8') as f:
